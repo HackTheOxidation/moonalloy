@@ -1,6 +1,6 @@
 [package]
 name = "moonalloy"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Tomas <tomas.hagenau@protonmail.ch>"]
 edition = "2018"
 description = "The oxidized scientific computing library for the 21st century"
