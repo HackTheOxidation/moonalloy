@@ -135,13 +135,13 @@ pub extern "C" fn array_concat(ptr1: *const Array, ptr2: *const Array) -> *mut A
 
 #[no_mangle]
 pub extern "C" fn array_zeros(len: i32) -> *mut Array {
-    let array = Array::zeros(len as usize);
+    let array = Array::zeros(len);
     Array::to_raw(array)
 }
 
 #[no_mangle]
 pub extern "C" fn array_ones(len: i32) -> *mut Array {
-    let array = Array::ones(len as usize);
+    let array = Array::ones(len);
     Array::to_raw(array)
 }
 

@@ -1,7 +1,7 @@
 use crate::Array;
 
-use std::fmt::*;
 use std::alloc::{alloc, Layout};
+use std::fmt::*;
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Clone)]
@@ -39,7 +39,7 @@ impl Matrix {
         };
 
         for i in 0..rows as usize {
-            mat_slice[i] = Array::of(val, cols as usize);
+            mat_slice[i] = Array::of(val, cols);
         }
 
         Matrix {
@@ -60,14 +60,10 @@ impl Matrix {
     pub fn identity(len: i32) -> Matrix {
         let mat = Matrix::zeros(len, len);
 
-        let mat_slice = unsafe {
-            std::slice::from_raw_parts_mut(mat.arrays, len as usize)
-        };
+        let mat_slice = unsafe { std::slice::from_raw_parts_mut(mat.arrays, len as usize) };
 
         for i in 0..len as usize {
-            let slice = unsafe {
-                std::slice::from_raw_parts_mut(mat_slice[i].arr, len as usize)
-            };
+            let slice = unsafe { std::slice::from_raw_parts_mut(mat_slice[i].arr, len as usize) };
 
             slice[i] = 1.0;
         }
@@ -76,19 +72,15 @@ impl Matrix {
     }
 
     pub fn to_string(&self) -> String {
-        let array_slice = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let array_slice =
+            unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
         let mut result = String::from("Matrix: \n[");
 
         for (i, arr) in array_slice.iter().enumerate() {
-            let slice = unsafe {
-                std::slice::from_raw_parts_mut(arr.arr, arr.len as usize)
-            };
+            let slice = unsafe { std::slice::from_raw_parts_mut(arr.arr, arr.len as usize) };
 
             result.push_str(format!("{:?}", slice).as_str());
-            
             if i < (arr.len - 1) as usize {
                 result.push_str(", \n ")
             }
@@ -100,8 +92,14 @@ impl Matrix {
     }
 
     pub fn add(&self, other: &Matrix) -> Matrix {
-        assert!(self.cols == other.cols, "ERROR - Matrix addition: Columns differ in dimensions.");
-        assert!(self.rows == other.rows, "ERROR - Matrix addition: Rows differ in dimensions.");
+        assert!(
+            self.cols == other.cols,
+            "ERROR - Matrix addition: Columns differ in dimensions."
+        );
+        assert!(
+            self.rows == other.rows,
+            "ERROR - Matrix addition: Rows differ in dimensions."
+        );
 
         let result = unsafe {
             let layout = Layout::array::<Array>(self.rows as usize).unwrap();
@@ -109,13 +107,10 @@ impl Matrix {
             std::slice::from_raw_parts_mut(ptr as *mut Array, self.rows as usize)
         };
 
-        let mat_slice1 = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
-        let mat_slice2 = unsafe {
-            std::slice::from_raw_parts_mut(other.arrays, other.rows as usize)
-        };
+        let mat_slice2 =
+            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows as usize) };
 
         for i in 0..self.rows as usize {
             result[i] = mat_slice1[i].add(&mat_slice2[i]);
@@ -135,9 +130,7 @@ impl Matrix {
             std::slice::from_raw_parts_mut(ptr as *mut Array, self.rows as usize)
         };
 
-        let slice = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
         for i in 0..self.rows as usize {
             result[i] = slice[i].scalar(scal);
@@ -151,8 +144,14 @@ impl Matrix {
     }
 
     pub fn sub(&self, other: &Matrix) -> Matrix {
-        assert!(self.cols == other.cols, "ERROR - Matrix subtraction: Columns differ in dimensions.");
-        assert!(self.rows == other.rows, "ERROR - Matrix subtraction: Rows differ in dimensions.");
+        assert!(
+            self.cols == other.cols,
+            "ERROR - Matrix subtraction: Columns differ in dimensions."
+        );
+        assert!(
+            self.rows == other.rows,
+            "ERROR - Matrix subtraction: Rows differ in dimensions."
+        );
 
         let result = unsafe {
             let layout = Layout::array::<Array>(self.rows as usize).unwrap();
@@ -160,13 +159,10 @@ impl Matrix {
             std::slice::from_raw_parts_mut(ptr as *mut Array, self.rows as usize)
         };
 
-        let mat_slice1 = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
-        let mat_slice2 = unsafe {
-            std::slice::from_raw_parts_mut(other.arrays, other.rows as usize)
-        };
+        let mat_slice2 =
+            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows as usize) };
 
         for i in 0..self.rows as usize {
             result[i] = mat_slice1[i].sub(&mat_slice2[i]);
@@ -180,8 +176,14 @@ impl Matrix {
     }
 
     pub fn elem_mult(&self, other: &Matrix) -> Matrix {
-        assert!(self.cols == other.cols, "ERROR - Matrix element-wise multiplication: Columns differ in dimensions.");
-        assert!(self.rows == other.rows, "ERROR - Matrix element-wise multiplication: Rows differ in dimensions.");
+        assert!(
+            self.cols == other.cols,
+            "ERROR - Matrix element-wise multiplication: Columns differ in dimensions."
+        );
+        assert!(
+            self.rows == other.rows,
+            "ERROR - Matrix element-wise multiplication: Rows differ in dimensions."
+        );
 
         let result = unsafe {
             let layout = Layout::array::<Array>(self.rows as usize).unwrap();
@@ -189,13 +191,10 @@ impl Matrix {
             std::slice::from_raw_parts_mut(ptr as *mut Array, self.rows as usize)
         };
 
-        let mat_slice1 = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
-        let mat_slice2 = unsafe {
-            std::slice::from_raw_parts_mut(other.arrays, other.rows as usize)
-        };
+        let mat_slice2 =
+            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows as usize) };
 
         for i in 0..self.rows as usize {
             result[i] = mat_slice1[i].mult(&mat_slice2[i]);
@@ -215,15 +214,13 @@ impl Matrix {
             std::slice::from_raw_parts_mut(ptr as *mut Array, self.cols as usize)
         };
 
-        let arr_slice = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let arr_slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
         for i in 0..self.cols as usize {
-            result[i] = Array::zeros(self.rows as usize);
+            result[i] = Array::zeros(self.rows);
 
             for j in 0..self.rows as usize {
-                result[i].set(arr_slice[j].get(i), j);
+                result[i].set(arr_slice[j].get(i as i32), j as i32);
             }
         }
 
@@ -235,7 +232,10 @@ impl Matrix {
     }
 
     pub fn mult(&self, other: &Matrix) -> Matrix {
-        assert!(self.rows == other.cols, "ERROR - Matrix multiplication: Invalid dimensions.");
+        assert!(
+            self.rows == other.cols,
+            "ERROR - Matrix multiplication: Invalid dimensions."
+        );
 
         let result = unsafe {
             let layout = Layout::array::<Array>(self.cols as usize).unwrap();
@@ -245,19 +245,17 @@ impl Matrix {
 
         let mat_t = self.transpose();
 
-        let mat_slice1 = unsafe {
-            std::slice::from_raw_parts_mut(mat_t.arrays, mat_t.rows as usize)
-        };
+        let mat_slice1 =
+            unsafe { std::slice::from_raw_parts_mut(mat_t.arrays, mat_t.rows as usize) };
 
-        let mat_slice2 = unsafe {
-            std::slice::from_raw_parts_mut(other.arrays, other.rows as usize)
-        };
+        let mat_slice2 =
+            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows as usize) };
 
         for i in 0..self.cols as usize {
-            result[i] = Array::zeros(other.rows as usize);
+            result[i] = Array::zeros(other.rows);
 
             for j in 0..other.rows as usize {
-                result[i].set(mat_slice1[j].dotp(&mat_slice2[i]), j);
+                result[i].set(mat_slice1[j].dotp(&mat_slice2[i]), j as i32);
             }
         }
 
@@ -268,20 +266,45 @@ impl Matrix {
         }
     }
 
-    pub fn get(&self, i: usize, j: usize) -> f64 {
-        let slice = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+    pub fn get(&self, i: i32, j: i32) -> f64 {
+        let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
-        slice[i].get(j)
+        slice[i as usize].get(j)
     }
 
-    pub fn set(&self, val: f64, i: usize, j: usize) {
+    pub fn splice(&self, row: i32, first: i32, last: i32) -> Array {
         let slice = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
+            let layout = Layout::array::<f64>((last - first) as usize).unwrap();
+            let ptr = alloc(layout);
+            std::slice::from_raw_parts_mut(ptr as *mut f64, (last - first) as usize)
         };
 
-        slice[i].set(val, j);
+        for col in first..last {
+            slice[(col - first) as usize] = self.get(row, col);
+        }
+
+        Array::from(slice)
+    }
+
+    pub fn set(&self, val: f64, i: i32, j: i32) {
+        let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
+
+        slice[i as usize].set(val, j);
+    }
+
+    pub fn set_row(&self, arr: Array, row: i32) {
+        let mut offset: usize = 0;
+        if arr.len() < self.cols as usize {
+            offset = self.cols as usize - arr.len();
+        }
+
+        for elem in 0..arr.len() {
+            self.set(arr.get(elem as i32), row, (elem + offset) as i32);
+        }
+    }
+
+    pub fn dimensions(&self) -> (i32, i32) {
+        (self.rows, self.cols)
     }
 
     pub fn to_raw(mat: Matrix) -> *mut Matrix {
@@ -290,11 +313,10 @@ impl Matrix {
 }
 
 impl Display for Matrix {
-
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        write!(f,"{}", self.to_string())
+        write!(f, "{}", self.to_string())
     }
-}  
+}
 
 impl PartialEq for Matrix {
     fn eq(&self, other: &Self) -> bool {
@@ -306,13 +328,9 @@ impl PartialEq for Matrix {
             return false;
         }
 
-        let slice1 = unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        };
+        let slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) };
 
-        let slice2 = unsafe {
-            std::slice::from_raw_parts_mut(other.arrays, other.rows as usize)
-        };
+        let slice2 = unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows as usize) };
 
         for i in 0..self.rows as usize {
             if slice1[i] != slice2[i] {
@@ -327,17 +345,13 @@ impl PartialEq for Matrix {
 impl Deref for Matrix {
     type Target = [Array];
     fn deref(&self) -> &[Array] {
-        unsafe {
-            std::slice::from_raw_parts(self.arrays, self.rows as usize)
-        }
+        unsafe { std::slice::from_raw_parts(self.arrays, self.rows as usize) }
     }
 }
 
 impl DerefMut for Matrix {
     fn deref_mut(&mut self) -> &mut [Array] {
-        unsafe {
-            std::slice::from_raw_parts_mut(self.arrays, self.rows as usize)
-        }
+        unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows as usize) }
     }
 }
 
@@ -374,7 +388,6 @@ mod test {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
-        
         assert_eq!(r, a.add(&b));
     }
 
@@ -383,7 +396,6 @@ mod test {
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
-        
         assert_eq!(r, a.sub(&b));
     }
 
@@ -399,16 +411,20 @@ mod test {
     fn elem_mult() {
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
-        let r = Matrix::new(&mut [Array::from(&mut [6.0, 15.0]), Array::from(&mut [40.0, 104.0])]);
-        
+        let r = Matrix::new(&mut [
+            Array::from(&mut [6.0, 15.0]),
+            Array::from(&mut [40.0, 104.0]),
+        ]);
         assert_eq!(r, a.elem_mult(&b));
     }
 
     #[test]
     fn mult() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
-        let r = Matrix::new(&mut [Array::from(&mut [7.0, 10.0]), Array::from(&mut [15.0, 22.0])]);
-        
+        let r = Matrix::new(&mut [
+            Array::from(&mut [7.0, 10.0]),
+            Array::from(&mut [15.0, 22.0]),
+        ]);
         assert_eq!(r, a.mult(&a));
     }
 
@@ -416,14 +432,12 @@ mod test {
     fn transpose() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 3.0]), Array::from(&mut [2.0, 4.0])]);
-        
         assert_eq!(r, a.transpose());
     }
 
     #[test]
     fn get() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
-        
         assert_eq!(3.0, a.get(1, 0));
     }
 

@@ -173,7 +173,8 @@ impl Array {
         Box::into_raw(Box::new(arr))
     }
 
-    pub fn of(val: f64, len: usize) -> Array {
+    pub fn of(val: f64, len: i32) -> Array {
+        let len = len as usize;
         let arr_slice = unsafe {
             let layout = Layout::array::<f64>(len).unwrap();
             let ptr = alloc(layout);
@@ -190,32 +191,40 @@ impl Array {
         }
     }
 
-    pub fn zeros(len: usize) -> Array {
+    pub fn zeros(len: i32) -> Array {
         Array::of(0.0, len)
     }
 
-    pub fn ones(len: usize) -> Array {
+    pub fn ones(len: i32) -> Array {
         Array::of(1.0, len)
     }
 
-    pub fn get(&self, index: usize) -> f64 {
-        assert!(
-            index < self.len as usize,
-            "ERROR - Array get: Index out of bounds."
-        );
+    pub fn get(&self, index: i32) -> f64 {
+        assert!(index < self.len, "ERROR - Array get: Index out of bounds.");
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len as usize) };
 
-        slice[index]
+        slice[index as usize]
     }
 
-    pub fn set(&self, val: f64, index: usize) {
-        assert!(
-            index < self.len as usize,
-            "ERROR - Array get: Index out of bounds."
-        );
+    pub fn set(&self, val: f64, index: i32) {
+        assert!(index < self.len, "ERROR - Array get: Index out of bounds.");
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len as usize) };
 
-        slice[index] = val;
+        slice[index as usize] = val;
+    }
+
+    pub fn splice(&self, first: i32, last: i32) -> Array {
+        let arr_slice = unsafe {
+            let layout = Layout::array::<f64>((last - first) as usize).unwrap();
+            let ptr = alloc(layout);
+            std::slice::from_raw_parts_mut(ptr as *mut f64, (last - first) as usize)
+        };
+
+        for i in first..last {
+            arr_slice[(i - first) as usize] = self.get(i);
+        }
+
+        Array::from(arr_slice)
     }
 }
 
@@ -370,5 +379,14 @@ mod test {
         assert_eq!(*it.next().unwrap(), 1.0 as f64);
         assert_eq!(*it.next().unwrap(), 2.0 as f64);
         assert_eq!(*it.next().unwrap(), 3.0 as f64);
+    }
+
+    #[test]
+    fn splice() {
+        let expected = Array::from(&mut [2.0, 3.0]);
+        let a = Array::from(&mut [1.0, 2.0, 3.0, 4.0, 5.0]);
+
+        let actual = a.splice(1, 3);
+        assert_eq!(expected, actual);
     }
 }
