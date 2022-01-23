@@ -2,6 +2,7 @@ pub mod linalg;
 
 use crate::linalg::array::Array;
 use crate::linalg::matrix::Matrix;
+use crate::linalg::methods::gauss_elimination;
 use std::ffi::CString;
 use std::os::raw::c_char;
 
@@ -134,32 +135,32 @@ pub extern "C" fn array_concat(ptr1: *const Array, ptr2: *const Array) -> *mut A
 }
 
 #[no_mangle]
-pub extern "C" fn array_zeros(len: i32) -> *mut Array {
+pub extern "C" fn array_zeros(len: usize) -> *mut Array {
     let array = Array::zeros(len);
     Array::to_raw(array)
 }
 
 #[no_mangle]
-pub extern "C" fn array_ones(len: i32) -> *mut Array {
+pub extern "C" fn array_ones(len: usize) -> *mut Array {
     let array = Array::ones(len);
     Array::to_raw(array)
 }
 
 // Matrix
 #[no_mangle]
-pub extern "C" fn matrix_zeros(rows: i32, cols: i32) -> *mut Matrix {
+pub extern "C" fn matrix_zeros(rows: usize, cols: usize) -> *mut Matrix {
     let mat = Matrix::zeros(rows, cols);
     Matrix::to_raw(mat)
 }
 
 #[no_mangle]
-pub extern "C" fn matrix_ones(rows: i32, cols: i32) -> *mut Matrix {
+pub extern "C" fn matrix_ones(rows: usize, cols: usize) -> *mut Matrix {
     let mat = Matrix::ones(rows, cols);
     Matrix::to_raw(mat)
 }
 
 #[no_mangle]
-pub extern "C" fn matrix_identity(len: i32) -> *mut Matrix {
+pub extern "C" fn matrix_identity(len: usize) -> *mut Matrix {
     let mat = Matrix::identity(len);
     Matrix::to_raw(mat)
 }
@@ -264,4 +265,19 @@ pub extern "C" fn matrix_mult(ptr1: *const Matrix, ptr2: *const Matrix) -> *mut 
     };
 
     Matrix::to_raw(mat1.mult(mat2))
+}
+
+#[no_mangle]
+pub extern "C" fn linalg_gauss(ptr1: *const Matrix, ptr2: *const Array) -> *mut Array {
+    let a = unsafe {
+        assert!(!ptr1.is_null());
+        &*ptr1
+    };
+
+    let b = unsafe {
+        assert!(!ptr2.is_null());
+        &*ptr2
+    };
+
+    Array::to_raw(gauss_elimination(a.clone(), b.clone()))
 }
