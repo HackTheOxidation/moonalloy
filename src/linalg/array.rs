@@ -1,15 +1,27 @@
 use std::alloc::{alloc, Layout};
 use std::fmt::*;
-use std::ops::{Deref, DerefMut, Index, IndexMut};
+use std::ops::{Add, Deref, DerefMut, Index, IndexMut, Mul, Neg, Sub};
 
+/// A representation of a mathematical array/vector
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct Array {
+    /// Number of elements in the Array 
     len: usize,
+    /// Elements of the Array, stored as a mutable pointer
     arr: *mut f64,
 }
 
 impl Array {
+    /// Returns a new Array with no elements
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new empty Array
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::new();
+    /// ```
     pub fn new() -> Array {
         let arr_slice = unsafe {
             let layout = Layout::new::<f64>();
@@ -23,6 +35,20 @@ impl Array {
         }
     }
 
+    /// Creates a new Array from a slice of elements
+    ///
+    /// # Arguments
+    ///
+    /// * `slice` - A mutable slice of float values. This will become the internal values of the
+    /// Array.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// ```
     pub fn from(slice: &mut [f64]) -> Array {
         Array {
             len: slice.len(),
@@ -30,6 +56,17 @@ impl Array {
         }
     }
 
+    /// Calculate the sum of all the elements in the Array
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(6.0, array.sum());
+    /// ```
     pub fn sum(&self) -> f64 {
         let mut s: f64 = 0.0;
         let v = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
@@ -40,6 +77,21 @@ impl Array {
         s
     }
 
+    /// Multiply every element in the Array with a scalar value
+    ///
+    /// # Arguments
+    ///
+    /// * `scal` - scalar value to multiply with.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [2.0, 4.0, 6.0]), array.scalar(2.0));
+    /// ```
     pub fn scalar(&self, scal: f64) -> Array {
         let result = unsafe {
             let layout = Layout::array::<f64>(self.len()).unwrap();
@@ -59,7 +111,24 @@ impl Array {
         }
     }
 
-    pub fn add(&self, other: &Array) -> Array {
+    /// Add two Arrays without modifying either Array.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - the other Array to add
+    ///
+    /// # Examples
+    ///
+    /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// let b = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [2.0, 4.0, 6.0]), a.plus(&b));
+    /// // You can use the `+`-operator as a shorthand for this
+    /// assert_eq!(Array::from(&mut [2.0, 4.0, 6.0]), a + b);
+    /// ```
+    pub fn plus(&self, other: &Array) -> Array {
         assert_eq!(self.len(), other.len(), "Lengths are different!");
 
         let result = unsafe {
@@ -82,7 +151,24 @@ impl Array {
         }
     }
 
-    pub fn sub(&self, other: &Array) -> Array {
+    /// Performs substraction on two Arrays without modifying either Array.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - the other Array to substract
+    ///
+    /// # Examples
+    ///
+    /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// let b = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [0.0, 0.0, 0.0]), a.minus(&b));
+    /// // You can use the `-`-operator as a shorthand for this
+    /// assert_eq!(Array::from(&mut [0.0, 0.0, 0.0]), a - b);
+    /// ```
+    pub fn minus(&self, other: &Array) -> Array {
         assert_eq!(self.len(), other.len(), "Lengths are different!");
 
         let result = unsafe {
@@ -105,6 +191,23 @@ impl Array {
         }
     }
 
+    /// Performs multiplication on two Arrays without modifying either Array.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - the other Array to multiply with
+    ///
+    /// # Examples
+    ///
+    /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// let b = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [1.0, 4.0, 9.0]), a.mult(&b));
+    /// // You can use the `*`-operator as a shorthand for this
+    /// assert_eq!(Array::from(&mut [1.0, 4.0, 9.0]), a * b);
+    /// ```
     pub fn mult(&self, other: &Array) -> Array {
         assert_eq!(self.len(), other.len(), "Lengths are different!");
 
@@ -128,12 +231,44 @@ impl Array {
         }
     }
 
+    /// Calculates the dot product on two Arrays without modifying either Array.
+    /// Returns a single floating-point value.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - the other Array calculate the dot product with 
+    ///
+    /// # Examples
+    ///
+    /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// let b = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(14.0, a.dotp(&b));
+    /// ```
     pub fn dotp(&self, other: &Array) -> f64 {
         let arr = self.mult(other);
         let v = unsafe { std::slice::from_raw_parts_mut(arr.arr, arr.len()) };
         v.iter().sum()
     }
 
+    /// Concatenate with another Array. This will modify the original array.
+    ///
+    /// # Arguments
+    ///
+    /// * `other` - the other Array calculate the dot product with 
+    ///
+    /// # Examples
+    ///
+    /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// let b = Array::from(&mut [4.0, 5.0]);
+    /// a.concat(&b);
+    ///
+    /// assert_eq!(Array::from(&mut [1.0, 2.0, 3.0, 4.0, 5.0]), a.dotp(&b));
+    /// ```
     pub fn concat(&self, other: &Array) -> Array {
         let len = self.len() + other.len();
         let result = unsafe {
@@ -163,16 +298,51 @@ impl Array {
         }
     }
 
+    /// Returns a string representation of the Array.
+    ///
+    ///
+    /// # Examples
+    ///
+    /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// println!("{}", a.to_string()); 
+    /// // The to_string() is not necessary since Array implements the `Display` trait.
+    /// println!("{}", a); 
+    /// ```
     pub fn to_string(&self) -> String {
         let array_slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
 
         format!("Array: {:?}", array_slice)
     }
 
+    /// Returns a raw mutable pointer to the Array.
+    /// This is useful for FFI purposes.
+    ///
+    /// # Arguments
+    ///
+    /// * `arr` - the Array to be converted into a raw pointer
     pub fn to_raw(arr: Array) -> *mut Array {
         Box::into_raw(Box::new(arr))
     }
 
+    /// Creates a new Array of length `len` all where all elements have the value of `val`.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - the value for all elements in the new Array
+    /// * `len` - the number of elements in the new Array
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create an Array with 3 elements, where all have the value of 2.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::of(2.0, 3);
+    ///
+    /// assert_eq!(Array::from(&mut [2.0, 2.0, 2.0]), array);
+    /// ```
     pub fn of(val: f64, len: usize) -> Array {
         let arr_slice = unsafe {
             let layout = Layout::array::<f64>(len).unwrap();
@@ -279,7 +449,7 @@ impl Index<usize> for Array {
     type Output = f64;
 
     fn index(&self, i: usize) -> &Self::Output {
-        assert!(i < self.len(), "ERROR - Array get: Index out of bounds.");
+        assert!(i < self.len(), "ERROR - Array: Index out of bounds.");
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
         &slice[i]
     }
@@ -293,6 +463,38 @@ impl IndexMut<usize> for Array {
     }
 }
 
+impl Add for Array {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        self.plus(&other)
+    }
+}
+
+impl Sub for Array {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        self.minus(&other)
+    }
+}
+
+impl Mul for Array {
+    type Output = Self;
+    
+    fn mul(self, other: Self) -> Self {
+        self.mult(&other)
+    }
+}
+
+impl Neg for Array {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        self.scalar(-1.0)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -303,6 +505,21 @@ mod test {
         let f = Array::from(&mut []);
 
         assert_eq!(n, f);
+    }
+
+    #[test]
+    fn index() {
+        let a = Array::from(&mut [1.0, 2.0, 3.0]);
+
+        assert_eq!(2.0, a[1]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn index_out_of_bounds() {
+        let a = Array::from(&mut [1.0, 2.0, 3.0]);
+        
+        a[3];
     }
 
     #[test]
@@ -321,12 +538,20 @@ mod test {
     }
 
     #[test]
+    fn neg() {
+        let a = Array::from(&mut [1.0, 2.0, 3.0]);
+        let r = Array::from(&mut [-1.0, -2.0, -3.0]);
+
+        assert_eq!(r, -a)
+    }
+
+    #[test]
     fn add() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let b = Array::from(&mut [2.0, 3.0, 5.0]);
         let r = Array::from(&mut [3.0, 5.0, 8.0]);
 
-        assert_eq!(r, a.add(&b));
+        assert_eq!(r, a + b);
     }
 
     #[test]
@@ -335,7 +560,7 @@ mod test {
         let b = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [1.0, 1.0, 2.0]);
 
-        assert_eq!(r, a.sub(&b));
+        assert_eq!(r, a - b);
     }
 
     #[test]
@@ -344,7 +569,7 @@ mod test {
         let b = Array::from(&mut [2.0, 3.0, 5.0]);
         let r = Array::from(&mut [2.0, 6.0, 15.0]);
 
-        assert_eq!(r, a.mult(&b));
+        assert_eq!(r, a * b);
     }
 
     #[test]

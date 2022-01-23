@@ -2,7 +2,7 @@ use crate::Array;
 
 use std::alloc::{alloc, Layout};
 use std::fmt::*;
-use std::ops::{Deref, DerefMut};
+use std::ops::{Add, Deref, DerefMut, Index, IndexMut, Mul, Neg, Sub};
 
 #[derive(Debug, Clone)]
 #[repr(C)]
@@ -91,7 +91,7 @@ impl Matrix {
         result
     }
 
-    pub fn add(&self, other: &Matrix) -> Matrix {
+    pub fn plus(&self, other: &Matrix) -> Matrix {
         assert!(
             self.cols == other.cols,
             "ERROR - Matrix addition: Columns differ in dimensions."
@@ -113,7 +113,7 @@ impl Matrix {
             unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
 
         for i in 0..self.rows {
-            result[i] = mat_slice1[i].add(&mat_slice2[i]);
+            result[i] = mat_slice1[i].plus(&mat_slice2[i]);
         }
 
         Matrix {
@@ -143,7 +143,7 @@ impl Matrix {
         }
     }
 
-    pub fn sub(&self, other: &Matrix) -> Matrix {
+    pub fn minus(&self, other: &Matrix) -> Matrix {
         assert!(
             self.cols == other.cols,
             "ERROR - Matrix subtraction: Columns differ in dimensions."
@@ -165,7 +165,7 @@ impl Matrix {
             unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
 
         for i in 0..self.rows {
-            result[i] = mat_slice1[i].sub(&mat_slice2[i]);
+            result[i] = mat_slice1[i].minus(&mat_slice2[i]);
         }
 
         Matrix {
@@ -355,9 +355,81 @@ impl DerefMut for Matrix {
     }
 }
 
+impl Index<usize> for Matrix {
+    type Output = Array;
+
+    fn index(&self, i: usize) -> &Self::Output {
+        assert!(i < self.rows, "ERROR - Matrix: Index out of bounds.");
+        let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
+        &slice[i]
+    }
+}
+
+impl IndexMut<usize> for Matrix {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        assert!(index < self.rows, "ERROR - Matrix: Index out of bounds.");
+        let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
+        &mut slice[index]
+    }
+}
+
+impl Add for Matrix {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        self.plus(&other)
+    }
+}
+
+impl Sub for Matrix {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        self.minus(&other)
+    }
+}
+
+impl Mul for Matrix {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        self.elem_mult(&other)
+    }
+}
+
+impl Neg for Matrix {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        self.scalar(-1.0)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn index() {
+        let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
+
+        assert_eq!(3.0, a[1][0]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn index_out_of_bounds_rows() {
+        let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
+        
+        a[2][1];
+    }
+
+    #[test]
+    #[should_panic]
+    fn index_out_of_bounds_columns() {
+        let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
+        
+        a[1][2];
+    }
 
     #[test]
     fn zeros() {
@@ -388,7 +460,7 @@ mod test {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
-        assert_eq!(r, a.add(&b));
+        assert_eq!(r, a + b);
     }
 
     #[test]
@@ -396,7 +468,7 @@ mod test {
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
-        assert_eq!(r, a.sub(&b));
+        assert_eq!(r, a - b);
     }
 
     #[test]
@@ -408,6 +480,14 @@ mod test {
     }
 
     #[test]
+    fn neg() {
+        let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
+        let r = Matrix::new(&mut [Array::from(&mut [-1.0, -2.0]), Array::from(&mut [-3.0, -5.0])]);
+
+        assert_eq!(r, -a);
+    }
+
+    #[test]
     fn elem_mult() {
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
@@ -415,7 +495,7 @@ mod test {
             Array::from(&mut [6.0, 15.0]),
             Array::from(&mut [40.0, 104.0]),
         ]);
-        assert_eq!(r, a.elem_mult(&b));
+        assert_eq!(r, a * b);
     }
 
     #[test]

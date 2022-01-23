@@ -52,7 +52,7 @@ pub extern "C" fn array_add(ptr1: *const Array, ptr2: *const Array) -> *mut Arra
         &*ptr2
     };
 
-    Array::to_raw(arr1.add(arr2))
+    Array::to_raw(arr1.plus(arr2))
 }
 
 #[no_mangle]
@@ -67,7 +67,7 @@ pub extern "C" fn array_sub(ptr1: *const Array, ptr2: *const Array) -> *mut Arra
         &*ptr2
     };
 
-    let result = arr1.sub(arr2);
+    let result = arr1.minus(arr2);
 
     Array::to_raw(result)
 }
@@ -135,33 +135,33 @@ pub extern "C" fn array_concat(ptr1: *const Array, ptr2: *const Array) -> *mut A
 }
 
 #[no_mangle]
-pub extern "C" fn array_zeros(len: usize) -> *mut Array {
-    let array = Array::zeros(len);
+pub extern "C" fn array_zeros(len: i32) -> *mut Array {
+    let array = Array::zeros(len as usize);
     Array::to_raw(array)
 }
 
 #[no_mangle]
-pub extern "C" fn array_ones(len: usize) -> *mut Array {
-    let array = Array::ones(len);
+pub extern "C" fn array_ones(len: i32) -> *mut Array {
+    let array = Array::ones(len as usize);
     Array::to_raw(array)
 }
 
 // Matrix
 #[no_mangle]
-pub extern "C" fn matrix_zeros(rows: usize, cols: usize) -> *mut Matrix {
-    let mat = Matrix::zeros(rows, cols);
+pub extern "C" fn matrix_zeros(rows: i32, cols: i32) -> *mut Matrix {
+    let mat = Matrix::zeros(rows as usize, cols as usize);
     Matrix::to_raw(mat)
 }
 
 #[no_mangle]
-pub extern "C" fn matrix_ones(rows: usize, cols: usize) -> *mut Matrix {
-    let mat = Matrix::ones(rows, cols);
+pub extern "C" fn matrix_ones(rows: i32, cols: i32) -> *mut Matrix {
+    let mat = Matrix::ones(rows as usize, cols as usize);
     Matrix::to_raw(mat)
 }
 
 #[no_mangle]
-pub extern "C" fn matrix_identity(len: usize) -> *mut Matrix {
-    let mat = Matrix::identity(len);
+pub extern "C" fn matrix_identity(len: i32) -> *mut Matrix {
+    let mat = Matrix::identity(len as usize);
     Matrix::to_raw(mat)
 }
 
@@ -199,7 +199,7 @@ pub extern "C" fn matrix_add(ptr1: *const Matrix, ptr2: *const Matrix) -> *mut M
         &*ptr2
     };
 
-    Matrix::to_raw(mat1.add(mat2))
+    Matrix::to_raw(mat1.plus(mat2))
 }
 
 #[no_mangle]
@@ -224,7 +224,7 @@ pub extern "C" fn matrix_sub(ptr1: *const Matrix, ptr2: *const Matrix) -> *mut M
         &*ptr2
     };
 
-    Matrix::to_raw(mat1.sub(mat2))
+    Matrix::to_raw(mat1.minus(mat2))
 }
 
 #[no_mangle]
