@@ -1,3 +1,8 @@
+//! Array - An implementation of a mathematical vector/array
+//!
+//! This module contains structures and functions for manipulating vectors/arrays in Linear
+//! Algebra. 
+
 use std::alloc::{alloc, Layout};
 use std::fmt::*;
 use std::ops::{Add, Deref, DerefMut, Index, IndexMut, Mul, Neg, Sub};
@@ -119,6 +124,7 @@ impl Array {
     ///
     /// # Examples
     ///
+    /// ```
     /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
@@ -159,6 +165,7 @@ impl Array {
     ///
     /// # Examples
     ///
+    /// ```
     /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
@@ -199,6 +206,7 @@ impl Array {
     ///
     /// # Examples
     ///
+    /// ```
     /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
@@ -240,6 +248,7 @@ impl Array {
     ///
     /// # Examples
     ///
+    /// ```
     /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
@@ -261,6 +270,7 @@ impl Array {
     ///
     /// # Examples
     ///
+    /// ```
     /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
@@ -303,6 +313,7 @@ impl Array {
     ///
     /// # Examples
     ///
+    /// ```
     /// // Creates two new Arrays both containing the values 1.0, 2.0 and 3.0
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
@@ -360,14 +371,66 @@ impl Array {
         }
     }
 
+    /// Creates a new Array of length `len` all where all elements are set to 0.0.
+    ///
+    /// # Arguments
+    ///
+    /// * `len` - the number of elements in the new Array
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create an Array with 3 elements, where all have the value of 0.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::zeros(3);
+    ///
+    /// assert_eq!(Array::from(&mut [0.0, 0.0, 0.0]), array);
+    /// ```
     pub fn zeros(len: usize) -> Array {
         Array::of(0.0, len)
     }
 
+    /// Creates a new Array of length `len` all where all elements are set to 1.0.
+    ///
+    /// # Arguments
+    ///
+    /// * `len` - the number of elements in the new Array
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create an Array with 3 elements, where all have the value of 1.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::ones(3);
+    ///
+    /// assert_eq!(Array::from(&mut [1.0, 1.0, 1.0]), array);
+    /// ```
     pub fn ones(len: usize) -> Array {
         Array::of(1.0, len)
     }
 
+    /// Returns the value at index: `index` in the Array.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - the index of the requested value.
+    ///
+    /// # Panics
+    ///
+    /// The `index` must be smaller than the length of the Array otherwise the code will panic with
+    /// an index out of bounds error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create an Array with 3 elements
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(2.0, array.get(1));
+    /// // The shorthand for this is the `[]`-operator
+    /// assert_eq!(2.0, array[1]);
+    /// ```
     pub fn get(&self, index: usize) -> f64 {
         assert!(index < self.len(), "ERROR - Array get: Index out of bounds.");
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
@@ -375,14 +438,58 @@ impl Array {
         slice[index]
     }
 
-    pub fn set(&self, val: f64, index: usize) {
+    /// Mutates the value at index: `index` in the Array.
+    ///
+    /// # Arguments
+    ///
+    /// * `val` - the new value to be set.
+    /// * `index` - the index of the requested value.
+    ///
+    /// # Panics
+    ///
+    /// The `index` must be smaller than the length of the Array otherwise the code will panic with
+    /// an index out of bounds error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create an Array with 3 elements
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    /// 
+    /// array.set(5.0, 1);
+    /// // use the `[]`-operator as a shorthand
+    /// // array[1] = 5.0;
+    /// assert_eq!(5.0, array[1]);
+    /// ```
+    pub fn set(&mut self, val: f64, index: usize) {
         assert!(index < self.len(), "ERROR - Array get: Index out of bounds.");
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
 
         slice[index] = val;
     }
 
+    /// Returns a copy of a section of the Array
+    /// 
+    /// # Arguments
+    ///
+    /// * `first` - first index of the Array to copy from.
+    /// * `last` - last index (exclusive) of the Array to copy from.
+    ///
+    /// # Panics
+    ///
+    /// `first` must be strictly smaller than `last` otherwise the code will panic.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0, 4.0, 5.0]);
+    /// 
+    /// assert_eq(Array::from(&mut [2.0, 3.0]), array.splice(1, 3));
+    /// ```
     pub fn splice(&self, first: usize, last: usize) -> Array {
+        assert!(first < last, "ERROR - Array splice: first index must be before last index");
         let arr_slice = unsafe {
             let layout = Layout::array::<f64>(last - first).unwrap();
             let ptr = alloc(layout);
@@ -396,10 +503,12 @@ impl Array {
         Array::from(arr_slice)
     }
 
+    /// Returns the contents of the Array as a slice of floating-point values.
     pub fn as_slice(&self) -> &[f64] {
         unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) }
     }
 
+    /// Returns the number of elements in the Array
     pub fn len(&self) -> usize {
         self.len
     }
