@@ -82,11 +82,7 @@ impl Array {
         s
     }
 
-    /// Multiply every element in the Array with a scalar value
-    ///
-    /// # Arguments
-    ///
-    /// * `scal` - scalar value to multiply with.
+    /// Calculate the average of all the elements in the Array
     ///
     /// # Examples
     ///
@@ -95,9 +91,56 @@ impl Array {
     /// use moonalloy::linalg::array::Array;
     /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
     ///
-    /// assert_eq!(Array::from(&mut [2.0, 4.0, 6.0]), array.scalar(2.0));
+    /// assert_eq!(2.0, array.average());
     /// ```
-    pub fn scalar(&self, scal: f64) -> Array {
+    pub fn average(&self) -> f64 {
+        let mut s: f64 = 0.0;
+        let v = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
+
+        for i in 0..self.len() {
+            s += v[i];
+        }
+        s / self.len as f64
+    }
+
+    /// Calculate the norm of the Array
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 3.0 and 4.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [3.0, 4.0]);
+    ///
+    /// assert_eq!(5.0, array.norm());
+    /// ```
+    pub fn norm(&self) -> f64 {
+        let mut n: f64 = 0.0;
+        let v = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
+
+        for i in 0..self.len() {
+            n += v[i] * v[i];
+        }
+
+	n.sqrt()
+    }
+
+    /// Add a scalar value to every element in the Array 
+    ///
+    /// # Arguments
+    ///
+    /// * `scalar` - scalar value to add.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [3.0, 4.0, 5.0]), array.scalar_add(2.0));
+    /// ```
+    pub fn scalar_add(&self, scalar: f64) -> Array {
         let result = unsafe {
             let layout = Layout::array::<f64>(self.len()).unwrap();
             let ptr = alloc(layout) as *mut f64;
@@ -107,7 +150,75 @@ impl Array {
         let arr_slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
 
         for i in 0..self.len() {
-            result[i] = scal * arr_slice[i];
+            result[i] = scalar + arr_slice[i];
+        }
+
+        Array {
+            arr: result.as_mut_ptr(),
+            len: self.len,
+        }
+    }
+
+    /// Subtract a scalar value from every element in the Array 
+    ///
+    /// # Arguments
+    ///
+    /// * `scalar` - scalar value to subtract.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [-1.0, 0.0, 1.0]), array.scalar_sub(2.0));
+    /// ```
+    pub fn scalar_sub(&self, scalar: f64) -> Array {
+        let result = unsafe {
+            let layout = Layout::array::<f64>(self.len()).unwrap();
+            let ptr = alloc(layout) as *mut f64;
+            std::slice::from_raw_parts_mut(ptr, self.len())
+        };
+
+        let arr_slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
+
+        for i in 0..self.len() {
+            result[i] = arr_slice[i] - scalar;
+        }
+
+        Array {
+            arr: result.as_mut_ptr(),
+            len: self.len,
+        }
+    }
+
+    /// Multiply every element in the Array with a scalar value
+    ///
+    /// # Arguments
+    ///
+    /// * `scalar` - scalar value to multiply with.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// // Create a new Array containing the values 1.0, 2.0 and 3.0
+    /// use moonalloy::linalg::array::Array;
+    /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
+    ///
+    /// assert_eq!(Array::from(&mut [2.0, 4.0, 6.0]), array.scalar_mult(2.0));
+    /// ```
+    pub fn scalar_mult(&self, scalar: f64) -> Array {
+        let result = unsafe {
+            let layout = Layout::array::<f64>(self.len()).unwrap();
+            let ptr = alloc(layout) as *mut f64;
+            std::slice::from_raw_parts_mut(ptr, self.len())
+        };
+
+        let arr_slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
+
+        for i in 0..self.len() {
+            result[i] = scalar * arr_slice[i];
         }
 
         Array {
@@ -600,7 +711,7 @@ impl Neg for Array {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        self.scalar(-1.0)
+        self.scalar_mult(-1.0)
     }
 }
 
@@ -639,11 +750,11 @@ mod test {
     }
 
     #[test]
-    fn scalar() {
+    fn scalar_mult() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [2.0, 4.0, 6.0]);
 
-        assert_eq!(r, a.scalar(2.0))
+        assert_eq!(r, a.scalar_mult(2.0))
     }
 
     #[test]

@@ -29,7 +29,7 @@ pub fn gauss_elimination(mut a: Matrix, mut b: Array) -> Array {
                 let factor = a.get(i, row) / a.get(row, row);
                 let val = a
                     .splice(i, row + 1, rows)
-                    .minus(&a.splice(row, row + 1, rows).scalar(factor));
+                    .minus(&a.splice(row, row + 1, rows).scalar_mult(factor));
                 a.set_row(val, i);
                 b.set(b.get(i) - factor * b.get(row), i);
             }

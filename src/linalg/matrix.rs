@@ -268,7 +268,7 @@ impl Matrix {
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
 
         for i in 0..self.rows {
-            result[i] = slice[i].scalar(scal);
+            result[i] = slice[i].scalar_mult(scal);
         }
 
         Matrix {

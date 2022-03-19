@@ -10,6 +10,7 @@
 //! ![moonalloy-luajit](https://git.hacktheoxidation.xyz/HackTheOxidation/moonalloy-luajit).
 
 pub mod linalg;
+pub mod machine_learning;
 
 use crate::linalg::array::Array;
 use crate::linalg::matrix::Matrix;
@@ -51,7 +52,7 @@ pub extern "C" fn array_scalar(ptr: *mut Array, scal: f64) -> *mut Array {
         &*ptr
     };
 
-    Array::to_raw(arr.scalar(scal))
+    Array::to_raw(arr.scalar_mult(scal))
 }
 
 /// FFI-function that adds two arrays together and returns a copy of the result.
