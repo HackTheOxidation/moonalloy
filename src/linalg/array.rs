@@ -1,7 +1,7 @@
 //! Array - An implementation of a mathematical vector/array
 //!
 //! This module contains structures and functions for manipulating vectors/arrays in Linear
-//! Algebra. 
+//! Algebra.
 
 use std::alloc::{alloc, Layout};
 use std::fmt::*;
@@ -11,7 +11,7 @@ use std::ops::{Add, Deref, DerefMut, Index, IndexMut, Mul, Neg, Sub};
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct Array {
-    /// Number of elements in the Array 
+    /// Number of elements in the Array
     len: usize,
     /// Elements of the Array, stored as a mutable pointer
     arr: *mut f64,
@@ -122,10 +122,10 @@ impl Array {
             n += v[i] * v[i];
         }
 
-	n.sqrt()
+        n.sqrt()
     }
 
-    /// Add a scalar value to every element in the Array 
+    /// Add a scalar value to every element in the Array
     ///
     /// # Arguments
     ///
@@ -159,7 +159,7 @@ impl Array {
         }
     }
 
-    /// Subtract a scalar value from every element in the Array 
+    /// Subtract a scalar value from every element in the Array
     ///
     /// # Arguments
     ///
@@ -355,7 +355,7 @@ impl Array {
     ///
     /// # Arguments
     ///
-    /// * `other` - the other Array calculate the dot product with 
+    /// * `other` - the other Array calculate the dot product with
     ///
     /// # Examples
     ///
@@ -377,7 +377,7 @@ impl Array {
     ///
     /// # Arguments
     ///
-    /// * `other` - the other Array calculate the dot product with 
+    /// * `other` - the other Array calculate the dot product with
     ///
     /// # Examples
     ///
@@ -429,9 +429,9 @@ impl Array {
     /// use moonalloy::linalg::array::Array;
     /// let a = Array::from(&mut [1.0, 2.0, 3.0]);
     ///
-    /// println!("{}", a.to_string()); 
+    /// println!("{}", a.to_string());
     /// // The to_string() is not necessary since Array implements the `Display` trait.
-    /// println!("{}", a); 
+    /// println!("{}", a);
     /// ```
     pub fn to_string(&self) -> String {
         let array_slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
@@ -543,7 +543,10 @@ impl Array {
     /// assert_eq!(2.0, array[1]);
     /// ```
     pub fn get(&self, index: usize) -> f64 {
-        assert!(index < self.len(), "ERROR - Array get: Index out of bounds.");
+        assert!(
+            index < self.len(),
+            "ERROR - Array get: Index out of bounds."
+        );
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
 
         slice[index]
@@ -567,21 +570,24 @@ impl Array {
     /// // Create an Array with 3 elements
     /// use moonalloy::linalg::array::Array;
     /// let array = Array::from(&mut [1.0, 2.0, 3.0]);
-    /// 
+    ///
     /// array.set(5.0, 1);
     /// // use the `[]`-operator as a shorthand
     /// // array[1] = 5.0;
     /// assert_eq!(5.0, array[1]);
     /// ```
     pub fn set(&mut self, val: f64, index: usize) {
-        assert!(index < self.len(), "ERROR - Array get: Index out of bounds.");
+        assert!(
+            index < self.len(),
+            "ERROR - Array get: Index out of bounds."
+        );
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
 
         slice[index] = val;
     }
 
     /// Returns a copy of a section of the Array
-    /// 
+    ///
     /// # Arguments
     ///
     /// * `first` - first index of the Array to copy from.
@@ -596,11 +602,14 @@ impl Array {
     /// ```
     /// use moonalloy::linalg::array::Array;
     /// let array = Array::from(&mut [1.0, 2.0, 3.0, 4.0, 5.0]);
-    /// 
+    ///
     /// assert_eq(Array::from(&mut [2.0, 3.0]), array.splice(1, 3));
     /// ```
     pub fn splice(&self, first: usize, last: usize) -> Array {
-        assert!(first < last, "ERROR - Array splice: first index must be before last index");
+        assert!(
+            first < last,
+            "ERROR - Array splice: first index must be before last index"
+        );
         let arr_slice = unsafe {
             let layout = Layout::array::<f64>(last - first).unwrap();
             let ptr = alloc(layout);
@@ -677,7 +686,10 @@ impl Index<usize> for Array {
 
 impl IndexMut<usize> for Array {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        assert!(index < self.len(), "ERROR - Array get: Index out of bounds.");
+        assert!(
+            index < self.len(),
+            "ERROR - Array get: Index out of bounds."
+        );
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arr, self.len()) };
         &mut slice[index]
     }
@@ -701,7 +713,7 @@ impl Sub for Array {
 
 impl Mul for Array {
     type Output = Self;
-    
+
     fn mul(self, other: Self) -> Self {
         self.mult(&other)
     }
@@ -738,7 +750,7 @@ mod test {
     #[should_panic]
     fn index_out_of_bounds() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
-        
+
         a[3];
     }
 
@@ -834,7 +846,7 @@ mod test {
 
     #[test]
     fn set() {
-        let a = Array::from(&mut [1.0, 2.0, 3.0]);
+        let mut a = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [5.0, 2.0, 3.0]);
 
         a.set(5.0, 0);
@@ -847,9 +859,9 @@ mod test {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let mut it = a.iter();
 
-        assert_eq!(*it.next().unwrap(), 1.0 as f64);
-        assert_eq!(*it.next().unwrap(), 2.0 as f64);
-        assert_eq!(*it.next().unwrap(), 3.0 as f64);
+        assert_eq!(*it.next().unwrap(), 1.0_f64);
+        assert_eq!(*it.next().unwrap(), 2.0_f64);
+        assert_eq!(*it.next().unwrap(), 3.0_f64);
     }
 
     #[test]

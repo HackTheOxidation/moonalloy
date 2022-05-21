@@ -169,8 +169,7 @@ impl Matrix {
 
     /// Returns a string representation of a matrix.
     pub fn to_string(&self) -> String {
-        let array_slice =
-            unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
+        let array_slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
 
         let mut result = String::from("Matrix: \n[");
 
@@ -228,8 +227,7 @@ impl Matrix {
 
         let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
 
-        let mat_slice2 =
-            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
+        let mat_slice2 = unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
 
         for i in 0..self.rows {
             result[i] = mat_slice1[i].plus(&mat_slice2[i]);
@@ -318,8 +316,7 @@ impl Matrix {
 
         let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
 
-        let mat_slice2 =
-            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
+        let mat_slice2 = unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
 
         for i in 0..self.rows {
             result[i] = mat_slice1[i].minus(&mat_slice2[i]);
@@ -372,8 +369,7 @@ impl Matrix {
 
         let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
 
-        let mat_slice2 =
-            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
+        let mat_slice2 = unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
 
         for i in 0..self.rows {
             result[i] = mat_slice1[i].mult(&mat_slice2[i]);
@@ -431,7 +427,7 @@ impl Matrix {
     ///
     /// For matrix multiplication of two matrices, A and B,
     /// A must have the dimensions `n`x`m` and B must have the dimensions `r`x`n`
-    /// in order for the multiplication to be valid. 
+    /// in order for the multiplication to be valid.
     ///
     /// # Examples
     ///
@@ -456,11 +452,9 @@ impl Matrix {
 
         let mat_t = self.transpose();
 
-        let mat_slice1 =
-            unsafe { std::slice::from_raw_parts_mut(mat_t.arrays, mat_t.rows) };
+        let mat_slice1 = unsafe { std::slice::from_raw_parts_mut(mat_t.arrays, mat_t.rows) };
 
-        let mat_slice2 =
-            unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
+        let mat_slice2 = unsafe { std::slice::from_raw_parts_mut(other.arrays, other.rows) };
 
         for i in 0..self.cols {
             result[i] = Array::zeros(other.rows);
@@ -527,7 +521,10 @@ impl Matrix {
     /// assert_eq!(Array::from(&mut [3.0, 5.0]), a.splice(1, 0, 2));
     /// ```
     pub fn splice(&self, row: usize, first: usize, last: usize) -> Array {
-        assert!(first < last, "ERROR - matrix splice: first index must be smaller than last index.");
+        assert!(
+            first < last,
+            "ERROR - matrix splice: first index must be smaller than last index."
+        );
         let slice = unsafe {
             let layout = Layout::array::<f64>(last - first).unwrap();
             let ptr = alloc(layout);
@@ -700,7 +697,7 @@ mod test {
     #[should_panic]
     fn index_out_of_bounds_rows() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
-        
+
         a[2][1];
     }
 
@@ -708,7 +705,7 @@ mod test {
     #[should_panic]
     fn index_out_of_bounds_columns() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
-        
+
         a[1][2];
     }
 
@@ -763,7 +760,10 @@ mod test {
     #[test]
     fn neg() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
-        let r = Matrix::new(&mut [Array::from(&mut [-1.0, -2.0]), Array::from(&mut [-3.0, -5.0])]);
+        let r = Matrix::new(&mut [
+            Array::from(&mut [-1.0, -2.0]),
+            Array::from(&mut [-3.0, -5.0]),
+        ]);
 
         assert_eq!(r, -a);
     }
@@ -804,7 +804,7 @@ mod test {
 
     #[test]
     fn set() {
-        let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
+        let mut a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 8.0])]);
 
         a.set(8.0, 1, 1);

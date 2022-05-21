@@ -41,7 +41,7 @@ pub fn gauss_elimination(mut a: Matrix, mut b: Array) -> Array {
         b.set(val, k);
     }
 
-    return b;
+    b
 }
 
 #[cfg(test)]
