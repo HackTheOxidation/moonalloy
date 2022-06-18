@@ -80,9 +80,9 @@ fn back_substitution(reduced: Matrix) -> Array {
 
     x[n] = y(n) / reduced[n][n]; 
     
-    for i in 0..rows {
+    for i in 0..n {
 	let mut kernel = 0.0;
-	for j in (i + 1)..n {
+	for j in i..=n {
 	    kernel += reduced[i][j] * x[j];
 	}
 	x[i] = (y(i) - kernel) / reduced[i][i];
@@ -94,6 +94,9 @@ fn back_substitution(reduced: Matrix) -> Array {
 }
 
 /// Select the argumentt hat yields the maximum output when applied to a function.
+///
+/// Based on the mathematical description of backwards substitution:
+/// https://algowiki-project.org/en/Backward_substitution
 pub fn argmax(range: Range<usize>, a: Matrix, k: usize, f: &dyn Fn(f64) -> f64) -> usize {
     let mut max_arg = range.start;
     let mut max_out = f(a[max_arg][k]);
@@ -117,6 +120,7 @@ mod test {
 	let a = Matrix::new(&mut [Array::from(&mut [3.0, 2.0]), Array::from(&mut [-6.0, 6.0])]);
         let b = Array::from(&mut [7.0, 6.0]);
 	let augmented = a.augment(b);
+	
 	let expected = Matrix::new(&mut [Array::from(&mut [-6.0, 6.0, 6.0]), Array::from(&mut [0.0, 5.0, 10.0])]);
 
 	let actual = row_echelon_form(augmented);
@@ -127,7 +131,7 @@ mod test {
     fn test_backsubstitution() {
 	let augmented = Matrix::new(&mut [Array::from(&mut [-6.0, 6.0, 6.0]), Array::from(&mut [0.0, 5.0, 10.0])]);
 
-	let expected = Array::from(&mut [-1.0, 2.0]);
+	let expected = Array::from(&mut [1.0, 2.0]);
 
 	let actual = back_substitution(augmented);
 	assert_eq!(expected, actual);
@@ -135,10 +139,11 @@ mod test {
 
     #[test]
     fn test_gauss_elimination() {
-        let expected = Array::from(&mut [-1.0, 2.0]);
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 2.0]), Array::from(&mut [-6.0, 6.0])]);
         let b = Array::from(&mut [7.0, 6.0]);
 
+	let expected = Array::from(&mut [1.0, 2.0]);
+	
         let actual = gauss_elimination(a, b);
         assert_eq!(expected, actual);
     }
