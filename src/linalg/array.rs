@@ -8,7 +8,7 @@ use std::fmt::*;
 use std::ops::{Add, Deref, DerefMut, Index, IndexMut, Mul, Neg, Sub};
 
 /// A representation of a mathematical array/vector
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Array {
     /// Number of elements in the Array
@@ -732,7 +732,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn new() {
+    fn test_new() {
         let n = Array::new();
         let f = Array::from(&mut []);
 
@@ -740,7 +740,7 @@ mod test {
     }
 
     #[test]
-    fn index() {
+    fn test_index() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
 
         assert_eq!(2.0, a[1]);
@@ -748,21 +748,21 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn index_out_of_bounds() {
+    fn test_index_out_of_bounds() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
 
         a[3];
     }
 
     #[test]
-    fn sum() {
+    fn test_sum() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
 
         assert_eq!(6.0, a.sum());
     }
 
     #[test]
-    fn scalar_mult() {
+    fn test_scalar_mult() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [2.0, 4.0, 6.0]);
 
@@ -770,7 +770,7 @@ mod test {
     }
 
     #[test]
-    fn neg() {
+    fn test_neg() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [-1.0, -2.0, -3.0]);
 
@@ -778,7 +778,7 @@ mod test {
     }
 
     #[test]
-    fn add() {
+    fn test_add() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let b = Array::from(&mut [2.0, 3.0, 5.0]);
         let r = Array::from(&mut [3.0, 5.0, 8.0]);
@@ -787,7 +787,7 @@ mod test {
     }
 
     #[test]
-    fn sub() {
+    fn test_sub() {
         let a = Array::from(&mut [2.0, 3.0, 5.0]);
         let b = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [1.0, 1.0, 2.0]);
@@ -796,7 +796,7 @@ mod test {
     }
 
     #[test]
-    fn mult() {
+    fn test_mult() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let b = Array::from(&mut [2.0, 3.0, 5.0]);
         let r = Array::from(&mut [2.0, 6.0, 15.0]);
@@ -805,7 +805,7 @@ mod test {
     }
 
     #[test]
-    fn dotp() {
+    fn test_dotp() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let b = Array::from(&mut [2.0, 3.0, 5.0]);
 
@@ -813,7 +813,7 @@ mod test {
     }
 
     #[test]
-    fn concat() {
+    fn test_concat() {
         let a = Array::from(&mut [1.0, 2.0]);
         let b = Array::from(&mut [3.0, 5.0]);
         let r = Array::from(&mut [1.0, 2.0, 3.0, 5.0]);
@@ -822,7 +822,7 @@ mod test {
     }
 
     #[test]
-    fn zeros() {
+    fn test_zeros() {
         let a = Array::zeros(3);
         let r = Array::from(&mut [0.0, 0.0, 0.0]);
 
@@ -830,7 +830,7 @@ mod test {
     }
 
     #[test]
-    fn ones() {
+    fn test_ones() {
         let a = Array::ones(3);
         let r = Array::from(&mut [1.0, 1.0, 1.0]);
 
@@ -838,14 +838,14 @@ mod test {
     }
 
     #[test]
-    fn get() {
+    fn test_get() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
 
         assert_eq!(2.0, a.get(1));
     }
 
     #[test]
-    fn set() {
+    fn test_set() {
         let mut a = Array::from(&mut [1.0, 2.0, 3.0]);
         let r = Array::from(&mut [5.0, 2.0, 3.0]);
 
@@ -855,7 +855,7 @@ mod test {
     }
 
     #[test]
-    fn iterator() {
+    fn test_iterator() {
         let a = Array::from(&mut [1.0, 2.0, 3.0]);
         let mut it = a.iter();
 
@@ -865,7 +865,7 @@ mod test {
     }
 
     #[test]
-    fn splice() {
+    fn test_splice() {
         let expected = Array::from(&mut [2.0, 3.0]);
         let a = Array::from(&mut [1.0, 2.0, 3.0, 4.0, 5.0]);
 

@@ -301,6 +301,7 @@ pub extern "C" fn matrix_mult(ptr1: *const Matrix, ptr2: *const Matrix) -> *mut 
     Matrix::to_raw(mat1.mult(mat2))
 }
 
+
 /// FFI-function that solves a system of linear equations with Gauss Elimination.
 #[no_mangle]
 pub extern "C" fn linalg_gauss(ptr1: *const Matrix, ptr2: *const Array) -> *mut Array {

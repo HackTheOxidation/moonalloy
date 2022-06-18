@@ -10,7 +10,7 @@ use std::fmt::*;
 use std::ops::{Add, Deref, DerefMut, Index, IndexMut, Mul, Neg, Sub};
 
 /// A representation of a mathematical matrix
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Matrix {
     /// Number of rows in the matrix
@@ -61,6 +61,21 @@ impl Matrix {
             cols: slice[0].len(),
             arrays: slice.as_mut_ptr(),
         }
+    }
+
+    /// Swaps the ith and jth row in the matrix.
+    ///
+    /// * `i` - the ith row in the matrix
+    /// * `j` - the jth row in the matrix
+    pub fn swap_rows(&mut self, i: usize, j: usize) {
+	if i < self.rows && j < self.rows && i != j {
+	    let arrays = unsafe {
+		std::slice::from_raw_parts_mut(self.arrays, self.rows)
+	    };
+	    let temp = arrays[i];
+	    arrays[i] = arrays[j];
+	    arrays[j] = temp;
+	}
     }
 
     /// Returns a new matrix where all the elements have the same value
@@ -509,7 +524,7 @@ impl Matrix {
     ///
     /// # Panics
     ///
-    /// The first index must be strictly smaller than the last index. Also the indexes must be
+    /// The first index must be strictly smaller than the last index. Also the indexes mpust be
     /// within the bounds of the underlying Array. Otherwise the code will panic.
     ///
     /// # Examples
@@ -566,6 +581,25 @@ impl Matrix {
         let slice = unsafe { std::slice::from_raw_parts_mut(self.arrays, self.rows) };
 
         slice[i].set(val, j);
+    }
+
+    /// Constructs an Augmented matrix for a matrix and an array.
+    ///
+    /// # Arguments
+    ///
+    /// * `b` - The result vector.
+    ///
+    ///
+    pub fn augment(&self, b: Array) -> Matrix {
+	let mut result = Matrix::zeros(self.rows, self.cols + 1);
+	for i in 0..self.rows {
+	    for j in 0..self.cols {
+		result[i][j] = self[i][j];
+	    }
+	    result[i][self.cols] = b[i];
+	}
+
+	result
     }
 
     pub fn set_row(&mut self, arr: Array, row: usize) {
@@ -687,7 +721,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn index() {
+    fn test_index() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
 
         assert_eq!(3.0, a[1][0]);
@@ -695,7 +729,7 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn index_out_of_bounds_rows() {
+    fn test_index_out_of_bounds_rows() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
 
         a[2][1];
@@ -703,14 +737,14 @@ mod test {
 
     #[test]
     #[should_panic]
-    fn index_out_of_bounds_columns() {
+    fn test_index_out_of_bounds_columns() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
 
         a[1][2];
     }
 
     #[test]
-    fn zeros() {
+    fn test_zeros() {
         let z = Matrix::zeros(2, 2);
         let r = Matrix::new(&mut [Array::from(&mut [0.0, 0.0]), Array::from(&mut [0.0, 0.0])]);
 
@@ -718,7 +752,7 @@ mod test {
     }
 
     #[test]
-    fn ones() {
+    fn test_ones() {
         let o = Matrix::ones(2, 2);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 1.0]), Array::from(&mut [1.0, 1.0])]);
 
@@ -726,7 +760,7 @@ mod test {
     }
 
     #[test]
-    fn identity() {
+    fn test_identity() {
         let i = Matrix::identity(2);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 0.0]), Array::from(&mut [0.0, 1.0])]);
 
@@ -734,7 +768,7 @@ mod test {
     }
 
     #[test]
-    fn add() {
+    fn test_add() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
@@ -742,7 +776,7 @@ mod test {
     }
 
     #[test]
-    fn sub() {
+    fn test_sub() {
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
@@ -750,7 +784,7 @@ mod test {
     }
 
     #[test]
-    fn scalar() {
+    fn test_scalar() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [2.0, 4.0]), Array::from(&mut [6.0, 10.0])]);
 
@@ -758,7 +792,7 @@ mod test {
     }
 
     #[test]
-    fn neg() {
+    fn test_neg() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 5.0])]);
         let r = Matrix::new(&mut [
             Array::from(&mut [-1.0, -2.0]),
@@ -769,7 +803,7 @@ mod test {
     }
 
     #[test]
-    fn elem_mult() {
+    fn test_elem_mult() {
         let a = Matrix::new(&mut [Array::from(&mut [3.0, 5.0]), Array::from(&mut [8.0, 13.0])]);
         let b = Matrix::new(&mut [Array::from(&mut [2.0, 3.0]), Array::from(&mut [5.0, 8.0])]);
         let r = Matrix::new(&mut [
@@ -780,7 +814,7 @@ mod test {
     }
 
     #[test]
-    fn mult() {
+    fn test_mult() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         let r = Matrix::new(&mut [
             Array::from(&mut [7.0, 10.0]),
@@ -790,20 +824,20 @@ mod test {
     }
 
     #[test]
-    fn transpose() {
+    fn test_transpose() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 3.0]), Array::from(&mut [2.0, 4.0])]);
         assert_eq!(r, a.transpose());
     }
 
     #[test]
-    fn get() {
+    fn test_get() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         assert_eq!(3.0, a.get(1, 0));
     }
 
     #[test]
-    fn set() {
+    fn test_set() {
         let mut a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         let r = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 8.0])]);
 
@@ -813,7 +847,7 @@ mod test {
     }
 
     #[test]
-    fn iterator() {
+    fn test_iterator() {
         let a = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
         let first = Array::from(&mut [1.0, 2.0]);
         let second = Array::from(&mut [3.0, 4.0]);
@@ -822,5 +856,14 @@ mod test {
 
         assert_eq!(it.next(), Some(first).as_ref());
         assert_eq!(it.next(), Some(second).as_ref());
+    }
+
+    #[test]
+    fn test_swap() {
+	let mut actual = Matrix::new(&mut [Array::from(&mut [1.0, 2.0]), Array::from(&mut [3.0, 4.0])]);
+	let expected = Matrix::new(&mut [Array::from(&mut [3.0, 4.0]), Array::from(&mut [1.0, 2.0])]);
+
+	actual.swap(0, 1);
+	assert_eq!(expected, actual);
     }
 }
