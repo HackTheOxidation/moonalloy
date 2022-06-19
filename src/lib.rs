@@ -11,6 +11,7 @@
 
 pub mod linalg;
 pub mod machine_learning;
+pub mod statistics;
 
 use crate::linalg::array::Array;
 use crate::linalg::matrix::Matrix;
