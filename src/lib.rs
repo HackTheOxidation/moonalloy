@@ -16,8 +16,16 @@ pub mod statistics;
 use crate::linalg::array::Array;
 use crate::linalg::matrix::Matrix;
 use crate::linalg::methods::gauss_elimination;
+
+use pyo3::prelude::*;
 use std::ffi::CString;
 use std::os::raw::c_char;
+
+/// Moonalloy as a python module.
+#[pymodule]
+fn moonalloy(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+    Ok(())
+}
 
 /// FFI-function for calculating the sum of the elements of an array.
 #[no_mangle]
